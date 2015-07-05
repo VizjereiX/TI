@@ -1,8 +1,11 @@
 <?php
 
+use Game\Game;
+
 // Autoloadowanie klas
 spl_autoload_register(function ($class) {
-	require './classes/' . strtolower($class) . '.php';
+	$path = str_replace('\\', DIRECTORY_SEPARATOR, $class);
+	require $path.'.php';
 });
 
 // Włączenie gry

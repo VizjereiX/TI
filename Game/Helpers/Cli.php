@@ -1,7 +1,15 @@
 <?php
 
-class CLI
+namespace Game\Helpers;
+
+/**
+ * Obsługa konsoli
+ */
+final class CLI
 {
+	/**
+	 * Rozmiar bufora
+	 */
 	const BUFFER = 80;
 
 	/**
@@ -28,13 +36,17 @@ class CLI
 	 * Odczytaj liczbę z wejścia konsoli
 	 * @return number
 	 */
-	public static function readNumber()
+	public static function readInteger()
 	{
-
-		do {
-			$number = filter_var(self::read(),FILTER_SANITIZE_NUMBER_INT); 
-		} while ( !is_numeric($number) );
-		return intval($number);
+		do	{
+				$number = filter_var(self::read(),FILTER_SANITIZE_NUMBER_INT);
+			
+				if ( !is_numeric($number) ) {
+					self::write("Podaj prawidłową liczbę całkowitą");
+					continue;
+				}
+				return intval($number);
+	
+		} while ( true );
 	}
 }
-
