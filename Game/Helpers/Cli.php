@@ -49,4 +49,19 @@ final class CLI
 	
 		} while ( true );
 	}
+
+	public static function readDefinedValues(Array $values)
+	{
+		do {
+			$value = filter_var(self::read(),FILTER_SANITIZE_STRING);
+			
+			if ( !in_array($value,$values)) {
+				self::write("Podaj jedną z wymienionych wartości: ".implode("/", $values).':');
+				var_dump($value);
+				continue;
+			}
+			return $value;
+			
+		} while ( true );
+	}
 }
