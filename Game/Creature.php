@@ -11,6 +11,7 @@ abstract class Creature
 	protected $dexterity	= 1;
 	protected $vitality		= 1;
 	protected $speed		= 1;
+	protected $type			= "Istota";
 
 	/**
 	 * Pobierz siłę
@@ -82,5 +83,19 @@ abstract class Creature
 	public function setSpeed($speed)
 	{
 		$this->speed = intval($speed);
+	}
+	
+	/**
+	 * Pobierz typ istoty
+	 * @return type
+	 */
+	public function getType()
+	{
+		return $this->type;
+	}
+	
+	public function __toString()
+	{
+		return $this->type;
 	}
 }

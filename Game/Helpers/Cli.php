@@ -34,15 +34,33 @@ final class CLI
 
 	/**
 	 * Odczytaj liczbę z wejścia konsoli
-	 * @return number
+	 * @param type $min (opcjonalnie) wartość minimalna
+	 * @param type $max (opcjonalnie) wartość maksymalna
+	 * @param type $def (opcjonalnie) wartość domyślna
+	 * @return type
 	 */
-	public static function readInteger()
+	public static function readInteger($min = null, $max = null, $def = null )
 	{
 		do	{
 				$number = filter_var(self::read(),FILTER_SANITIZE_NUMBER_INT);
+				
+				if ( $def !== null && trim($number) == "" ) {
+					return $def;
+				}
 			
 				if ( !is_numeric($number) ) {
 					self::write("Podaj prawidłową liczbę całkowitą");
+					continue;
+				}
+				$number = intval($number);
+				
+				if ( $min !== null && $number < $min ) {
+					self::write("Podaj liczbę większą lub równą ".$min);
+					continue;
+				}
+				
+				if ( $max !== null && $number > $max ) {
+					self::write("Podaj liczbę mniejszą lub równą ".$max);
 					continue;
 				}
 				return intval($number);
@@ -50,10 +68,15 @@ final class CLI
 		} while ( true );
 	}
 
+	/**
+	 * Odczytaj z konsoli jeden ze zdefiniowanych znaków tabeli jako parametr
+	 * @param array $values
+	 * @return type
+	 */
 	public static function readDefinedValues(Array $values)
 	{
 		do {
-			$value = filter_var(self::read(),FILTER_SANITIZE_STRING);
+			$value = filter_var(self::read(),FILTER_SANITIZE_URL);
 			
 			if ( !in_array($value,$values)) {
 				self::write("Podaj jedną z wymienionych wartości: ".implode("/", $values).':');
@@ -63,5 +86,13 @@ final class CLI
 			return $value;
 			
 		} while ( true );
+	}
+	
+	/**
+	 * Zapisz linię
+	 */
+	public static function writeLine()
+	{
+		self::write("--------------------------------------------------------");
 	}
 }

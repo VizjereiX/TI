@@ -7,5 +7,16 @@ namespace Game;
  */
 class Witcher extends Person
 {
-	//put your code here
+	protected $type	= "Wiedźmin";
+
+	/**
+	 * Konstruktor
+	 */
+	public function __construct()
+	{
+		$this->setStrength(6);
+		$this->setDexterity(6);
+		$this->setVitality(13);
+		$this->setSpeed(10);
+	}
 }

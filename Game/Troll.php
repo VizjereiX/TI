@@ -7,14 +7,16 @@ namespace Game;
  */
 class Troll extends Enemy
 {
+	protected $type	= "Troll";
+
 	/**
 	 * Konstruktor
 	 */
 	public function __construct()
 	{
-		$this->setStrength(6);
-		$this->setDexterity(7);
-		$this->setVitality(8);
-		$this->setSpeed(3);
+		$this->setStrength(7);
+		$this->setDexterity(5);
+		$this->setVitality(18);
+		$this->setSpeed(5);
 	}
 }
