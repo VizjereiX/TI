@@ -98,4 +98,9 @@ abstract class Creature
 	{
 		return $this->type;
 	}
+	
+	public function getStats()
+	{
+		return "S:{$this->strength}; Z:{$this->dexterity}; W:{$this->vitality}; S:{$this->speed}";
+	}
 }

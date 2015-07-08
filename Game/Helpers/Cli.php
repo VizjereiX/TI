@@ -80,7 +80,6 @@ final class CLI
 			
 			if ( !in_array($value,$values)) {
 				self::write("Podaj jedną z wymienionych wartości: ".implode("/", $values).':');
-				var_dump($value);
 				continue;
 			}
 			return $value;

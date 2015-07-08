@@ -16,7 +16,7 @@ class Witcher extends Person
 	{
 		$this->setStrength(6);
 		$this->setDexterity(6);
-		$this->setVitality(13);
+		$this->setVitality(6);
 		$this->setSpeed(10);
 	}
 }

@@ -16,7 +16,7 @@ class Troll extends Enemy
 	{
 		$this->setStrength(7);
 		$this->setDexterity(5);
-		$this->setVitality(18);
+		$this->setVitality(11);
 		$this->setSpeed(5);
 	}
 }
