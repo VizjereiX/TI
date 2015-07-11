@@ -24,9 +24,9 @@ class Game
 		$enemy = new Troll();
 
 		// Ustawianie statystyk
-		CLI::write("Czy chcesz samodzielnie zdefiniować statystyki (t/n)?");
+		CLI::write("Czy chcesz samodzielnie zdefiniować statystyki (t/n) [n]?");
 
-		if ( CLI::readDefinedValues(['t','n']) == 't' ) {
+		if ( CLI::readDefinedValues(['t','n'],'n') == 't' ) {
 			$this->setCustomStats($player);
 			$this->setCustomStats($enemy);
 		}
@@ -76,28 +76,30 @@ class Game
 			// Kolejna runda
 			CLI::writeLine();
 			CLI::write(sprintf("Runda walki: ".(++$runda)));
+
+			$fighters = $this->getFightersOrder($player,$enemy);
 			
-			// Wylicz punkty ruchu
-			$ap = max(floor( $player->getSpeed() / $enemy->getSpeed() ),1);
 			CLI::write("Twoje ({$player}) statystyki: ".$player->getStats());
 			CLI::write("Przeciwnika ({$enemy}) statystyki: ".$enemy->getStats());
 
+			while ( count($fighters) > 0 )
+			{
+				$attacker = array_shift($fighters);
+				CLI::write("Kolej na akcje istoty: {$attacker['o']}");
+				
+				
+				while ( $attacker['ap'] > 0 )
+				{
+					$a = $this->chooseAction($attacker['o']);
+					
+					
+				}
+				
+				CLI::read();
+			}
 			while ( $ap > 0 )
 			{
-				CLI::writeLine();
-				CLI::write("Twoje punkty ruchu: ".$ap);
-				CLI::write("Wybierz akcję:");
-				CLI::write("[1] Atak - 1 ap");
-				CLI::write("[2] Stworzenie eliksiru - 1+ ap");
-				CLI::write("[3] Wypicie eliksiru - 1 ap");
-				if ( $ap >= 2) {
-					CLI::write("[4] Obrona - 2+ ap");
-				}
-				CLI::write("[5] Koniec tury - 1+ ap");
-			
-			
-				$a =  CLI::readDefinedValues([1,2,3,4,5]);
-				CLI::writeLine();
+				
 				switch ( $a )
 				{
 					case 1:
@@ -136,7 +138,7 @@ class Game
 	 * Przelicz szansę na skuteczny atak
 	 * @param \Game\Creature $attacker
 	 * @param \Game\Creature $defender
-	 * @return type
+	 * @return Integer
 	 */
 	private function calculateAttack(Creature $attacker,Creature $defender)
 	{
@@ -144,4 +146,51 @@ class Game
 		return max( min( $sk, 90 ), 10 );
 	}
 	
+	/**
+	 * Stwórz tablicę kolejności walczących oraz ich punktów akcji
+	 * @param \Game\Creature $first
+	 * @param \Game\Creature $second
+	 * @return Array 
+	 */
+	private function getFightersOrder(Creature $first, Creature $second)
+	{
+		$ap = function ( $attacker, $defender ) {
+			return max(floor( $attacker->getSpeed() / $defender->getSpeed() ),1);
+		};
+
+		$fighters = [];
+		if ( $first->getSpeed() >= $second->getSpeed() ) {
+			$fighters[] = [ 'o' => $first,	'ap' => $ap($first,$second) ];
+			$fighters[] = [ 'o' => $second, 'ap' => $ap($second,$first) ];
+		} else {
+			$fighters[] = [ 'o' => $second,	'ap' => $ap($second,$first) ];
+			$fighters[] = [ 'o' => $first,	'ap' => $ap($first,$second) ];
+		}
+		
+		return $fighters;
+	}
+
+	/**
+	 * Wybierz akcję w zależności od typu atakującego
+	 * @param \Game\Creature $attacker
+	 * @return int
+	 */
+	private function chooseAction(Creature $attacker)
+	{
+		CLI::write("",true);
+		
+		if ( $attacker instanceof Person ) {
+			CLI::write("Wybierz akcję:");
+			CLI::write("[1] Atak - 1 ap");
+			CLI::write("[2] Stworzenie eliksiru - 1+ ap");
+			CLI::write("[3] Wypicie eliksiru - 1 ap");
+			CLI::write("[4] Obrona - 2+ ap");
+			CLI::write("[5] Koniec tury - 1+ ap");
+
+			return  CLI::readDefinedValues([1,2,3,4,5]);
+		} else {
+			CLI::write("{$attacker} wybiera akcję Atak!");
+			return 1;
+		}
+	}
 }

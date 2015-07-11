@@ -71,12 +71,17 @@ final class CLI
 	/**
 	 * Odczytaj z konsoli jeden ze zdefiniowanych znaków tabeli jako parametr
 	 * @param array $values
-	 * @return type
+	 * @param mixed $def (opcjonalnie
+	 * @return array
 	 */
-	public static function readDefinedValues(Array $values)
+	public static function readDefinedValues(Array $values, $def = null)
 	{
 		do {
 			$value = filter_var(self::read(),FILTER_SANITIZE_URL);
+			
+			if ( $def !== null && trim($value) == '' ) {
+				return $def;
+			}
 			
 			if ( !in_array($value,$values)) {
 				self::write("Podaj jedną z wymienionych wartości: ".implode("/", $values).':');
