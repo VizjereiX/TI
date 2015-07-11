@@ -7,7 +7,7 @@ namespace Game;
  */
 class Witcher extends Person
 {
-	protected $type	= "Wiedźmin";
+	protected $type	= "Wiedzmin";
 
 	/**
 	 * Konstruktor

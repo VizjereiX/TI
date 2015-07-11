@@ -49,18 +49,18 @@ final class CLI
 				}
 			
 				if ( !is_numeric($number) ) {
-					self::write("Podaj prawidłową liczbę całkowitą");
+					self::write("Podaj prawidlowa liczbe całkowita");
 					continue;
 				}
 				$number = intval($number);
 				
 				if ( $min !== null && $number < $min ) {
-					self::write("Podaj liczbę większą lub równą ".$min);
+					self::write("Podaj liczbe wieksza lub rowna ".$min);
 					continue;
 				}
 				
 				if ( $max !== null && $number > $max ) {
-					self::write("Podaj liczbę mniejszą lub równą ".$max);
+					self::write("Podaj liczbe mniejsza lub rowna ".$max);
 					continue;
 				}
 				return intval($number);
@@ -84,7 +84,7 @@ final class CLI
 			}
 			
 			if ( !in_array($value,$values)) {
-				self::write("Podaj jedną z wymienionych wartości: ".implode("/", $values).':');
+				self::write("Podaj jedna z wymienionych wartosci: ".implode("/", $values).':');
 				continue;
 			}
 			return $value;
