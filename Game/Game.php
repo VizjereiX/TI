@@ -2,7 +2,7 @@
 
 namespace Game;
 
-use \Game\Helpers\CLI;
+use \Game\Helpers\Cli as CLI;
 
 /**
  * Gra
