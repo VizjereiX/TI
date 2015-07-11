@@ -9,6 +9,13 @@ use \Game\Helpers\CLI;
  */
 class Game
 {
+	// Akcje atakującego
+	const ACTION_ATTACK			= 1;
+	const ACTION_MAKE_ELIXIR	= 2;
+	const ACTION_DRINK_ELIXIR	= 3;
+	const ACTION_DEFEND			= 4;
+	CONST ACTION_FINISH			= 5;
+
 	/**
 	 * Uruchom grę
 	 */
@@ -18,28 +25,40 @@ class Game
 		CLI::write("Gra uruchomiona!");
 		CLI::write("Witamy w Witcher Fighter v0.1");
 		CLI::writeLine();
-		
-		// Ustawianie obiektów
-		$player = new Witcher();
-		$enemy = new Troll();
+	
+		// Pętla gry
+		while ( true )
+		{
+			// Ustawianie obiektów
+			$player = new Witcher();
+			$enemy = new Troll();
 
-		// Ustawianie statystyk
-		CLI::write("Czy chcesz samodzielnie zdefiniowac statystyki (t/n) [domyslnie: n]?");
+			// Ustawianie statystyk
+			CLI::write("Czy chcesz samodzielnie zdefiniowac statystyki (t/n) [domyslnie: n]?");
 
-		if ( CLI::readDefinedValues(['t','n'],'n') == 't' ) {
-			$this->setCustomStats($player);
-			$this->setCustomStats($enemy);
+			if ( CLI::readDefinedValues(['t','n'],'n') == 't' ) {
+				$this->setCustomStats($player);
+				$this->setCustomStats($enemy);
+			}
+
+			// Faza walki
+			$this->fight($player,$enemy);
+			
+			// Powtorzenie gry?
+			CLI::write("Czy chcesz powtorzyc gre (t/n) [domyslnie: n]?");
+
+			if ( CLI::readDefinedValues(['t','n'],'n') == 'n' ) {
+				break;
+			}
 		}
-		
-		// Faza walki
-		$this->fight($player,$enemy);
 
 		CLI::writeLine();
 		CLI::write("Game end");
 	}
 
 	/**
-	 * Ustaw domyślne parametry postaci walczących
+	 * Ustaw statystyki dla wskazanej istoty
+	 * @param \Game\Creature $creature
 	 */
 	private function setCustomStats(Creature $creature)
 	{
@@ -81,6 +100,9 @@ class Game
 			
 			// Pobierz kolejność walczących
 			$fighters = $this->getFightersOrder($player,$enemy);
+			
+			// Zresetuj obrone gracza w tej rundzie
+			$player->setDefend(false);
 
 			// Jeśli wszyscy walczący nie wykonali ruchu...
 			while ( count($fighters) > 0 )
@@ -93,16 +115,34 @@ class Game
 				// Wypisz kto zaczyna ture
 				CLI::write("Swoja ture zaczyna: {$attacker} z {$ap} punktami akcji");
 
-				
+				// Jesli atakujacy ma wciaz punkty akcji
 				while ( $ap > 0 )
 				{
-					$a = $this->chooseAction($attacker);
+					$a = $this->chooseAction($attacker, $ap);
 					
-					switch ( $a ) {
+					switch ( $a )
+					{
+						// Wybrano atak
 						case 1:
+							$ap--;
+							$this->makeAttack($attacker,$defender);
+							
+							if ( $defender->getVitality() == 0 ) {
+								$ap = 0;
+							}
+							break;
+
 						case 2:
+							break;
+						
 						case 3:
+							break;
+						
+						// Wybrano obrone
 						case 4:
+							$ap -= 2;
+							$this->makeDefend($attacker);
+							break;
 							
 						// Wybrano koniec tury
 						case 5:
@@ -111,79 +151,61 @@ class Game
 					}
 					
 				}
-				
+							
+				// Broniacy sie zostal zabity?
+				if ( $defender->getVitality() == 0 ) {
+					CLI::writeLine();
+					CLI::write("{$defender} zostal zabity przez {$attacker}! Koniec walki.");
+					CLI::writeLine();
+					return;
+				}
+
+				// Koniec tury atakujacego
+				CLI::write("{$attacker} konczy swoja ture!");
 				CLI::read();
 			}
-			while ( $ap > 0 )
-			{
-				
-				switch ( $a )
-				{
-					case 1:
-						$ap--;
-						
-						$sk = $this->calculateAttack($player,$enemy);
-						$ski = 100 - $sk;
-						CLI::write("Probujesz zaatakowac przeciwnika z szansą {$ski}%");
-						
-						if ( rand(1, 100) >= $sk ) {
-							$enemy->setVitality($enemy->getVitality()-1);
-							CLI::write("Atak celny, zadajesz przeciwnikowi cios");
-							CLI::write("Przeciwnika ({$enemy}) statystyki: ".$enemy->getStats());
-						} else {
-							CLI::write("Pudlo, atak nieudany!");
-						}
-						break;
-					
-					case 5:
-						$ap = 0;
-						break;
-				}
-				
-				// Przeciwnik zabity
-				if ( $enemy->getVitality() == 0 ) {
-					break;
-				}
-			}
 
+			// Koniec rundy
+			CLI::write("Koniec rundy");
+		}
+	}
 
-			CLI::write("Koniec tury");
+	
+	/**
+	 * Wykonaj atak
+	 * @param \Game\Creature $attacker
+	 * @param \Game\Creature $defender
+	 */
+	private function makeAttack(Creature $attacker,Creature $defender)
+	{
+		CLI::write("{$attacker} atakuje cel: {$defender}");
+		
+		// Wylicz skutecznosc ataku
+		$sk = round( \max( \min( ( 50 + ( ($attacker->getDexterity() - $defender->getDexterity() ) / $defender->getDexterity() ) * 100 ), 90 ), 10 ) );
+		CLI::write("Oszacowana skutecznosc ataku: {$sk}%");
+		
+		if ( \rand(1, 100) <= $sk ) {
+			$defender->setVitality($defender->getVitality()-1);
+			CLI::write("Atak celny {$attacker} zadaje celny cios w {$defender}");
+			CLI::write("Aktualna witalnosc przeciwnika: {$defender->getVitality()}");
+		} else {
+			CLI::write("Pudlo, {$attacker} nie trafia w {$defender}");
 		}
 	}
 	
 	/**
-	 * Przelicz szansę na skuteczny atak
-	 * @param \Game\Creature $attacker
-	 * @param \Game\Creature $defender
-	 * @return Integer
-	 */
-	private function calculateAttack(Creature $attacker,Creature $defender)
-	{
-		$sk = ( ( ($attacker->getDexterity() - $defender->getDexterity() ) / $defender->getDexterity() ) * 100 );
-		return max( min( $sk, 90 ), 10 );
-	}
-	
-	/**
-	 * Stwórz tablicę kolejności walczących oraz ich punktów akcji
+	 * Zwróć tablicę kolejności walczących
 	 * @param \Game\Creature $first
 	 * @param \Game\Creature $second
 	 * @return Integer 
 	 */
 	private function getFightersOrder(Creature $first, Creature $second)
 	{
-		$ap = function ( $attacker, $defender ) {
-			return max(floor( $attacker->getSpeed() / $defender->getSpeed() ),1);
-		};
-
-		$fighters = [];
 		if ( $first->getSpeed() >= $second->getSpeed() ) {
-			$fighters[] = $first;
-			$fighters[] = $second;
+			return [ $first, $second ];
 		} else {
-			$fighters[] = $second;
-			$fighters[] = $first;
+			return [ $second, $first ];
 		}
-		return $fighters;
 	}
 
 	/**
@@ -192,19 +214,22 @@ class Game
 	 * @param type $second
 	 * @return Integer
 	 */
-	private function getActionPoints ( $first, $second ) {
+	private function getActionPoints( $first, $second )
+	{
 		return max(floor( $first->getSpeed() / $second->getSpeed() ),1);
 	}
 
 	/**
 	 * Wybierz akcję w zależności od typu atakującego
 	 * @param \Game\Creature $attacker
-	 * @return int
+	 * @param integer $ap
+	 * @return integer
 	 */
-	private function chooseAction(Creature $attacker)
+	private function chooseAction(Creature $attacker, $ap)
 	{
 		CLI::write("",true);
 		
+		// Jesli atakujacy sie to postac gracza
 		if ( $attacker instanceof Person ) {
 			CLI::write("Wybierz akcje:");
 			CLI::write("[1] Atak - 1 ap");
@@ -213,10 +238,38 @@ class Game
 			CLI::write("[4] Obrona - 2+ ap");
 			CLI::write("[5] Koniec tury - 1+ ap");
 
-			return  CLI::readDefinedValues([1,2,3,4,5]);
+			$a = null;
+
+			while ( true ) {
+				$a = CLI::readDefinedValues([
+					self::ACTION_ATTACK,
+					self::ACTION_MAKE_ELIXIR,
+					self::ACTION_DRINK_ELIXIR,
+					self::ACTION_DEFEND,
+					self::ACTION_FINISH
+				],1);
+				
+				if ( $ap < 2 && $a == self::ACTION_DEFEND ) {
+					CLI::write("{$attacker} nie ma tylu punktow akcji by wykonac ten ruch! Trzeba wybrac ponownie akcje.");
+					continue;
+				}
+				break;
+			}
+
+			return $a;
 		} else {
 			CLI::write("{$attacker} wybiera akcje Atak!");
 			return 1;
 		}
+	}
+	
+	/**
+	 * Postac sie broni
+	 * @param \Game\Person $person
+	 */
+	private function makeDefend(Person $person)
+	{
+		$person->setDefend(true);
+		CLI::write("{$person} sie broni i nie wykonuje innych akcji, ale podwyzsza swoja zrecznosc do {$person->getDexterity()}");
 	}
 }
